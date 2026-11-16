@@ -2,7 +2,7 @@
 
 :root {
     --bg-primary: #FFFFFF;
-    --bg-secondary: #F8F9FA;
+    --bg-secondary: #F5F7FA;
     --bg-card: #FFFFFF;
     --text-primary: #1A1A1A;
     --text-secondary: #6C757D;
@@ -15,17 +15,18 @@
 }
 
 [data-theme="dark"] {
-    --bg-primary: #0F172A;
-    --bg-secondary: #1E293B;
-    --bg-card: #1E293B;
-    --text-primary: #F1F5F9;
-    --text-secondary: #94A3B8;
+    /* Более тёмная, нейтральная тема (не синяя) */
+    --bg-primary: #0A0A0A;
+    --bg-secondary: #141414;
+    --bg-card: #1A1A1A;
+    --text-primary: #E5E5E5;
+    --text-secondary: #9CA3AF;
     --accent: #6366F1;
     --accent-hover: #818CF8;
-    --border: #334155;
-    --shadow: 0 1px 3px rgba(0,0,0,0.3);
-    --shadow-hover: 0 4px 12px rgba(0,0,0,0.5);
-    --success: #34D399;
+    --border: #2A2A2A;
+    --shadow: 0 1px 3px rgba(0,0,0,0.5);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.7);
+    --success: #10B981;
 }
 
 body {
@@ -151,6 +152,7 @@ body {
 
 .task-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; }
 
+/* ЧЕКБОКС С ГАЛОЧКОЙ */
 .task-checkbox {
     width: 28px;
     height: 28px;
@@ -163,10 +165,12 @@ body {
     justify-content: center;
     transition: all 0.2s;
     background: var(--bg-secondary);
+    position: relative;
 }
 
 .task-checkbox:hover { border-color: var(--accent); }
 
+/* Выполненный чекбокс — зелёный с белой галочкой */
 .task-checkbox.checked {
     background: var(--success);
     border-color: var(--success);
@@ -177,6 +181,7 @@ body {
     color: white;
     font-size: 1.2rem;
     font-weight: bold;
+    line-height: 1;
 }
 
 .task-title { flex: 1; font-size: 1.1rem; font-weight: 600; }
