@@ -134,22 +134,36 @@ function renderTasks(tasks) {
         return;
     }
     list.innerHTML = tasks.map(task => `
-        <div class="task-card">
+        <div class="task-card" data-id="${task.id}">
             <div class="task-header">
                 <div class="task-checkbox ${task.is_done ? 'checked' : ''}" onclick="toggleTask(${task.id}, ${!task.is_done})"></div>
                 <div class="task-title ${task.is_done ? 'completed' : ''}">${task.title}</div>
             </div>
-            ${task.description ? `<p style="color:var(--text-secondary);margin-top:0.5rem;">${task.description}</p>` : ''}
             <div class="task-meta">
                 ${task.due_date ? `<div class="task-meta-item">⏰ ${formatDate(task.due_date)}</div>` : ''}
                 ${task.assignee_name ? `<div class="task-meta-item">👤 ${task.assignee_name}</div>` : ''}
-                ${task.is_shared ? `<div class="task-meta-item" style="background:var(--accent);color:white;padding:0.2rem 0.6rem;border-radius:6px;">👥 Общая</div>` : ''}
+                ${task.is_shared ? `<div class="task-meta-item" style="background:var(--accent);color:white;padding:0.2rem 0.6rem;border-radius:6px;font-size:0.8rem;">👥 Общая</div>` : ''}
             </div>
-            <div class="task-actions">
-                <button class="btn btn-secondary" onclick="deleteTask(${task.id})">Удалить</button>
+            ${task.is_done ? `
+                <button class="btn btn-small btn-secondary" onclick="toggleDetails(${task.id})" style="margin-top:0.5rem;">
+                    ${task.is_done ? '📄 Развернуть' : '📄 Свернуть'}
+                </button>
+            ` : ''}
+            <div class="task-details" id="details-${task.id}">
+                ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                <div class="task-actions">
+                    <button class="btn btn-secondary btn-small" onclick="deleteTask(${task.id})">🗑 Удалить</button>
+                </div>
             </div>
         </div>
     `).join('');
+}
+
+function toggleDetails(taskId) {
+    const details = document.getElementById(`details-${taskId}`);
+    if (details) {
+        details.classList.toggle('expanded');
+    }
 }
 
 async function toggleTask(id, isDone) {
