@@ -1,13 +1,22 @@
 const { Pool } = require('pg');
+const { parse } = require('pg-connection-string');
 require('dotenv').config();
 
-const isProduction = !!process.env.DATABASE_URL;
+// Парсим строку подключения, чтобы контролировать параметры
+const config = process.env.DATABASE_URL 
+    ? parse(process.env.DATABASE_URL) 
+    : {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+      };
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 
-        `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
-    // На Render принудительно разрешаем самоподписанные сертификаты Supabase
-    ssl: isProduction ? { rejectUnauthorized: false } : false,
+    ...config,
+    // Для Supabase в облаке обязательно отключаем строгую проверку SSL
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
 module.exports = { query: (text, params) => pool.query(text, params) };
