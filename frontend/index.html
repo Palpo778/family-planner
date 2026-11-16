@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Семейный Планер</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Экран входа -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <h1>👨‍👩‍👧 Семейный Планер</h1>
+            <form id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Имя пользователя" required>
+                <input type="password" id="loginPassword" placeholder="Пароль" required>
+                <button type="submit" class="btn btn-primary">Войти</button>
+            </form>
+            <p class="switch-form">Нет аккаунта? <a href="#" onclick="showRegister()">Регистрация</a></p>
+        </div>
+    </div>
+
+    <!-- Экран регистрации -->
+    <div id="registerScreen" class="screen">
+        <div class="login-container">
+            <h1>Регистрация</h1>
+            <form id="registerForm">
+                <input type="text" id="regUsername" placeholder="Имя пользователя" required>
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Пароль" required>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+            <p class="switch-form">Уже есть аккаунт? <a href="#" onclick="showLogin()">Войти</a></p>
+        </div>
+    </div>
+
+    <!-- Главное приложение -->
+    <div id="appScreen" class="screen">
+        <div class="container">
+            <!-- Шапка -->
+            <div class="header">
+                <div class="logo">👨‍👩‍👧 Семейный Планер</div>
+                <div class="user-menu">
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                    <span id="username">Иван</span>
+                    <button class="btn btn-secondary" onclick="logout()">Выйти</button>
+                </div>
+            </div>
+
+            <!-- Табы -->
+            <div class="tabs">
+                <button class="tab active" data-filter="my">
+                    📋 Мои дела <span class="tab-count" id="myCount">0</span>
+                </button>
+                <button class="tab" data-filter="shared">
+                    👥 Общие дела <span class="tab-count" id="sharedCount">0</span>
+                </button>
+                <button class="tab" data-filter="done">
+                    ✅ Готово <span class="tab-count" id="doneCount">0</span>
+                </button>
+            </div>
+
+            <!-- Поиск -->
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="search-input" placeholder="Поиск задач...">
+            </div>
+
+            <!-- Список задач -->
+            <div id="tasksList" class="tasks-list"></div>
+        </div>
+
+        <!-- Кнопка добавления -->
+        <button class="add-task-btn" onclick="openModal()">+</button>
+
+        <!-- Модальное окно -->
+        <div class="modal" id="taskModal">
+            <div class="modal-content">
+                <h3 class="modal-header">Новая задача</h3>
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label class="form-label">Название</label>
+                        <input type="text" id="taskTitle" class="form-input" placeholder="Что нужно сделать?" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Описание</label>
+                        <textarea id="taskDescription" class="form-textarea" placeholder="Подробности..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Тип задачи</label>
+                        <select id="taskType" class="form-select">
+                            <option value="false">Моя личная</option>
+                            <option value="true">Общая</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="assigneeGroup">
+                        <label class="form-label">Исполнитель</label>
+                        <select id="taskAssignee" class="form-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Срок выполнения</label>
+                        <input type="datetime-local" id="taskDueDate" class="form-input">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Создать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
