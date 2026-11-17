@@ -165,7 +165,8 @@ function renderTasks(tasks) {
             ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
             <div class="task-meta">
                 ${task.due_date ? `<div class="task-meta-item">⏰ ${formatDate(task.due_date)}</div>` : ''}
-                ${task.assignee_name ? `<div class="task-meta-item">👤 ${task.assignee_name}</div>` : ''}
+                ${task.assignee_name ? `<div class="task-meta-item">👤 Исполнитель: ${task.assignee_name}</div>` : ''}
+                ${task.author_name && task.is_shared ? `<div class="task-meta-item">✍️ Создал: ${task.author_name}</div>` : ''}
                 ${task.is_shared ? `<div class="task-meta-item" style="background:var(--accent);color:white;padding:0.2rem 0.6rem;border-radius:6px;font-size:0.8rem;">👥 Общая</div>` : ''}
             </div>
             <div class="task-details" id="details-${task.id}">
@@ -177,33 +178,38 @@ function renderTasks(tasks) {
     `).join('');
 }
 
-function toggleDetails(taskId) {
-    const details = document.getElementById(`details-${taskId}`);
-    if (details) details.classList.toggle('expanded');
-}
-
 async function toggleTask(id, isDone) {
     try {
-        await fetch(`${API_URL}/tasks/${id}`, {
+        const res = await fetch(`${API_URL}/tasks/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: JSON.stringify({ is_done: isDone })
         });
+        if (!res.ok) {
+            const data = await res.json();
+            alert(data.error || 'Ошибка обновления');
+            return;
+        }
         loadTasks();
         loadCounts();
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); alert('Ошибка подключения'); }
 }
 
 async function deleteTask(id) {
     if (!confirm('Удалить задачу?')) return;
     try {
-        await fetch(`${API_URL}/tasks/${id}`, {
+        const res = await fetch(`${API_URL}/tasks/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
+        if (!res.ok) {
+            const data = await res.json();
+            alert(data.error || 'Ошибка удаления');
+            return;
+        }
         loadTasks();
         loadCounts();
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); alert('Ошибка подключения'); }
 }
 
 function openModal() { document.getElementById('taskModal').classList.add('active'); }
