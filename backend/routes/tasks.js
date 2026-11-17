@@ -3,24 +3,35 @@ const db = require('../db');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
-// Получить задачи с фильтрацией
 router.get('/', auth, async (req, res) => {
     try {
-        const { filter } = req.query;
+        const { filter, include_done } = req.query;
         const uid = req.user.id;
         let q, p;
         
         if (filter === 'my') {
-            q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE t.user_id=$1 AND t.is_shared=false AND t.is_done=false ORDER BY t.due_date ASC NULLS LAST`;
+            if (include_done === 'true') {
+                q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE t.user_id=$1 AND t.is_shared=false ORDER BY t.is_done ASC, t.due_date ASC NULLS LAST`;
+            } else {
+                q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE t.user_id=$1 AND t.is_shared=false AND t.is_done=false ORDER BY t.due_date ASC NULLS LAST`;
+            }
             p = [uid];
         } else if (filter === 'shared') {
-            q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE t.is_shared=true AND t.is_done=false ORDER BY t.due_date ASC NULLS LAST`;
+            if (include_done === 'true') {
+                q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE t.is_shared=true ORDER BY t.is_done ASC, t.due_date ASC NULLS LAST`;
+            } else {
+                q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE t.is_shared=true AND t.is_done=false ORDER BY t.due_date ASC NULLS LAST`;
+            }
             p = [];
         } else if (filter === 'done') {
             q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE (t.user_id=$1 OR t.is_shared=true) AND t.is_done=true ORDER BY t.updated_at DESC`;
             p = [uid];
         } else {
-            q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE (t.user_id=$1 OR t.is_shared=true) AND t.is_done=false ORDER BY t.due_date ASC NULLS LAST`;
+            if (include_done === 'true') {
+                q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE (t.user_id=$1 OR t.is_shared=true) ORDER BY t.is_done ASC, t.due_date ASC NULLS LAST`;
+            } else {
+                q = `SELECT t.*, u.username as assignee_name FROM tasks t LEFT JOIN users u ON t.assignee_id=u.id WHERE (t.user_id=$1 OR t.is_shared=true) AND t.is_done=false ORDER BY t.due_date ASC NULLS LAST`;
+            }
             p = [uid];
         }
         const r = await db.query(q, p);
@@ -28,7 +39,6 @@ router.get('/', auth, async (req, res) => {
     } catch (e) { console.error(e); res.status(500).json({ error: 'Ошибка' }); }
 });
 
-// Получить счётчики для всех вкладок
 router.get('/counts', auth, async (req, res) => {
     try {
         const uid = req.user.id;
@@ -45,7 +55,6 @@ router.get('/counts', auth, async (req, res) => {
     } catch (e) { console.error(e); res.status(500).json({ error: 'Ошибка' }); }
 });
 
-// Создать задачу
 router.post('/', auth, async (req, res) => {
     try {
         const { title, description, is_shared, assignee_id, due_date } = req.body;
@@ -55,7 +64,6 @@ router.post('/', auth, async (req, res) => {
     } catch (e) { console.error(e); res.status(500).json({ error: 'Ошибка' }); }
 });
 
-// Обновить задачу (включая is_done)
 router.put('/:id', auth, async (req, res) => {
     try {
         const { title, description, is_shared, assignee_id, due_date, is_done } = req.body;
@@ -66,7 +74,6 @@ router.put('/:id', auth, async (req, res) => {
     } catch (e) { console.error(e); res.status(500).json({ error: 'Ошибка' }); }
 });
 
-// Удалить задачу
 router.delete('/:id', auth, async (req, res) => {
     try {
         const r = await db.query('DELETE FROM tasks WHERE id=$1 AND (user_id=$2 OR is_shared=true) RETURNING id', [req.params.id, req.user.id]);
@@ -75,7 +82,6 @@ router.delete('/:id', auth, async (req, res) => {
     } catch (e) { res.status(500).json({ error: 'Ошибка' }); }
 });
 
-// Получить всех пользователей
 router.get('/users', auth, async (req, res) => {
     try {
         const r = await db.query('SELECT id, username FROM users');

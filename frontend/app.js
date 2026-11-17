@@ -107,7 +107,8 @@ function switchTab(filter) {
 
 async function loadTasks() {
     try {
-        const res = await fetch(`${API_URL}/tasks?filter=${currentFilter}`, {
+        // Загружаем все задачи для текущего фильтра (включая выполненные)
+        const res = await fetch(`${API_URL}/tasks?filter=${currentFilter}&include_done=true`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const tasks = await res.json();
@@ -133,24 +134,36 @@ function renderTasks(tasks) {
         list.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem;">Нет задач</p>';
         return;
     }
-    list.innerHTML = tasks.map(task => `
-        <div class="task-card" data-id="${task.id}">
+    
+    // Сортируем: сначала невыполненные, потом выполненные
+    const sortedTasks = tasks.sort((a, b) => a.is_done - b.is_done);
+    
+    list.innerHTML = sortedTasks.map(task => `
+        <div class="task-card ${task.is_done ? 'task-done' : ''}" data-id="${task.id}">
             <div class="task-header">
                 <div class="task-checkbox ${task.is_done ? 'checked' : ''}" onclick="toggleTask(${task.id}, ${!task.is_done})"></div>
                 <div class="task-title ${task.is_done ? 'completed' : ''}">${task.title}</div>
             </div>
+            
+            <!-- Описание видно сразу -->
+            ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+            
+            <!-- Мета-информация -->
             <div class="task-meta">
                 ${task.due_date ? `<div class="task-meta-item">⏰ ${formatDate(task.due_date)}</div>` : ''}
                 ${task.assignee_name ? `<div class="task-meta-item">👤 ${task.assignee_name}</div>` : ''}
                 ${task.is_shared ? `<div class="task-meta-item" style="background:var(--accent);color:white;padding:0.2rem 0.6rem;border-radius:6px;font-size:0.8rem;">👥 Общая</div>` : ''}
             </div>
+            
+            <!-- Кнопка развернуть/свернуть для выполненных -->
             ${task.is_done ? `
                 <button class="btn btn-small btn-secondary" onclick="toggleDetails(${task.id})" style="margin-top:0.5rem;">
-                    ${task.is_done ? '📄 Развернуть' : '📄 Свернуть'}
+                    📄 ${task._expanded ? 'Свернуть' : 'Развернуть'}
                 </button>
             ` : ''}
-            <div class="task-details" id="details-${task.id}">
-                ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+            
+            <!-- Детали (скрыты по умолчанию для выполненных) -->
+            <div class="task-details ${task._expanded ? 'expanded' : ''}" id="details-${task.id}">
                 <div class="task-actions">
                     <button class="btn btn-secondary btn-small" onclick="deleteTask(${task.id})">🗑 Удалить</button>
                 </div>
