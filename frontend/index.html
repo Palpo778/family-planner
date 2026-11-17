@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Семейный Планер</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4F46E5">
-    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
     <!-- Экран входа -->
@@ -39,7 +37,6 @@
     <!-- Главное приложение -->
     <div id="appScreen" class="screen">
         <div class="container">
-            <!-- Шапка -->
             <div class="header">
                 <div class="logo">👨‍👩‍👧 Семейный Планер</div>
                 <div class="user-menu">
@@ -49,33 +46,53 @@
                 </div>
             </div>
 
-            <!-- Табы -->
+            <!-- Вкладки -->
             <div class="tabs">
-                <button class="tab active" data-filter="my">
-                    📋 Мои дела <span class="tab-count" id="myCount">0</span>
-                </button>
-                <button class="tab" data-filter="shared">
-                    👥 Общие дела <span class="tab-count" id="sharedCount">0</span>
-                </button>
-                <button class="tab" data-filter="done">
-                    ✅ Готово <span class="tab-count" id="doneCount">0</span>
-                </button>
+                <button class="tab active" data-page="tasks">📋 Задачи</button>
+                <button class="tab" data-page="calendar">📅 Календарь</button>
+                <button class="tab" data-page="habits">🎯 Привычки</button>
             </div>
 
-            <!-- Поиск -->
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" class="search-input" placeholder="Поиск задач...">
+            <!-- Страница задач -->
+            <div id="tasksPage" class="page active">
+                <div class="tabs">
+                    <button class="tab active" data-filter="my">📋 Мои дела <span class="tab-count" id="myCount">0</span></button>
+                    <button class="tab" data-filter="shared">👥 Общие <span class="tab-count" id="sharedCount">0</span></button>
+                    <button class="tab" data-filter="done">✅ Готово <span class="tab-count" id="doneCount">0</span></button>
+                </div>
+
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Поиск задач...">
+                </div>
+
+                <div id="tasksList" class="tasks-list"></div>
+
+                <button class="add-task-btn" onclick="openModal()">+</button>
             </div>
 
-            <!-- Список задач -->
-            <div id="tasksList" class="tasks-list"></div>
+            <!-- Страница календаря -->
+            <div id="calendarPage" class="page">
+                <div class="calendar-header">
+                    <button class="btn btn-secondary" onclick="changeMonth(-1)">←</button>
+                    <h2 id="calendarMonth"></h2>
+                    <button class="btn btn-secondary" onclick="changeMonth(1)">→</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+                <div id="calendarTasks" class="calendar-tasks"></div>
+            </div>
+
+            <!-- Страница привычек -->
+            <div id="habitsPage" class="page">
+                <div class="habits-header">
+                    <h2>🎯 Мои привычки</h2>
+                    <button class="btn btn-primary" onclick="openHabitModal()">+ Добавить</button>
+                </div>
+                <div id="habitsList" class="habits-list"></div>
+            </div>
         </div>
 
-        <!-- Кнопка добавления -->
-        <button class="add-task-btn" onclick="openModal()">+</button>
-
-        <!-- Модальное окно -->
+        <!-- Модальное окно задачи -->
         <div class="modal" id="taskModal">
             <div class="modal-content">
                 <h3 class="modal-header">Новая задача</h3>
@@ -95,12 +112,12 @@
                             <option value="true">Общая</option>
                         </select>
                     </div>
-                    <div class="form-group" id="assigneeGroup">
+                    <div class="form-group">
                         <label class="form-label">Исполнитель</label>
                         <select id="taskAssignee" class="form-select"></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Срок выполнения</label>
+                        <label class="form-label">Срок</label>
                         <input type="datetime-local" id="taskDueDate" class="form-input">
                     </div>
                     <div class="modal-actions">
@@ -110,8 +127,40 @@
                 </form>
             </div>
         </div>
+
+        <!-- Модальное окно привычки -->
+        <div class="modal" id="habitModal">
+            <div class="modal-content">
+                <h3 class="modal-header">Новая привычка</h3>
+                <form id="habitForm">
+                    <div class="form-group">
+                        <label class="form-label">Название</label>
+                        <input type="text" id="habitTitle" class="form-input" placeholder="Например: Зарядка" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Описание</label>
+                        <textarea id="habitDescription" class="form-textarea" placeholder="Подробности..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Цвет</label>
+                        <input type="color" id="habitColor" class="form-input" value="#4F46E5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Тип</label>
+                        <select id="habitType" class="form-select">
+                            <option value="false">Моя личная</option>
+                            <option value="true">Общая</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeHabitModal()">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Создать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>
